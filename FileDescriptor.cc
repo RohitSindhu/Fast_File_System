@@ -101,6 +101,7 @@ int FileDescriptor::readBlock(short relativeBlockNumber)
 		Kernel::setErrno(Kernel::EFBIG);
 		return -1 ;
 	}
+
 	// ask the IndexNode for the actual block number 
 	// given the relative block number
 	int blockOffset = indexNode.getBlockAddress(relativeBlockNumber);
@@ -129,6 +130,23 @@ int FileDescriptor::writeBlock(short relativeBlockNumber)
 	{
 		Kernel::setErrno( Kernel::EFBIG ) ;
 		return -1 ;
+	}
+
+	// If there is no indirect block 
+	if ( relativeBlockNumber > IndexNode::MAX_DIRECT_BLOCKS
+		 && indexNode.getIndirectBlock() == FileSystem::NOT_A_BLOCK){
+
+			int blockOffset = fileSystem->allocateBlock() ;
+			if( blockOffset < 0 )
+			{
+				return -1 ;
+			}
+			indexNode.setIndirectBlock(blockOffset);
+
+			// TODO: Fix this
+			for (int i = IndexNode::MAX_DIRECT_BLOCKS + 1 ; i < IndexNode:: MAX_FILE_BLOCKS; i++) {
+				indexNode.setBlockAddress(i, FileSystem::NOT_A_BLOCK);
+			}
 	}
 
 	// ask the IndexNode for the actual block number 

@@ -838,6 +838,7 @@ int Kernel::write(int fd, char * buf, int count)
 	// referred to by fd has not room for the data
 
 	int offset = file->getOffset() ;
+
 	int size = file->getSize() ;
 	int blockSize = file->getBlockSize() ;
 	char * bytes = file->getBytes() ;
@@ -1367,3 +1368,248 @@ short Kernel::findIndexNode( char * path , IndexNode& inode )
 	return indexNodeNumber ;
 }
 
+int Kernel::nlink (char* filepath) {
+	int fileStatus = 0 ;
+    // stat the name to get information about the file or directory
+    Stat fileStat;
+    fileStatus = Kernel::stat( filepath , fileStat ) ;
+
+    if( fileStatus < 0 ) {
+        Kernel::perror("Error in Stat -- rm");
+        Kernel::exit(1);
+    }
+
+    int index = -1;
+    int ind = 0;
+    while(filepath[ind] != '\0') {
+        if (filepath[ind] == '/') {
+            index = ind;
+        }
+        ind++;
+    }
+    if (index == -1) {
+        Kernel::perror("No file to unlink to -- rm\n");
+        Kernel::exit(1);
+    }
+    // getFileName and Directory name
+    char dir[512];
+    char fileName[512];
+    memset(dir, '\0', 512);
+    memset(fileName, '\0', 512);
+    for (int i = 0 ; i < index ; i++) {
+        dir[i] = filepath[i];
+    }
+    ind = 0;
+    while(filepath[index + 1] != '\0') {
+        fileName[ind] = filepath[index +1];
+        index++;
+        ind++;
+    }
+
+    // open the directory
+    int fd_dir = Kernel::open( dir , Kernel::O_RDWR ) ;
+    if( fd_dir < 0 )
+    {
+        Kernel::perror( "rm" ) ;
+        cout << "rm" << ": unable to open \"" << dir << "\"\n";
+        Kernel::exit(1) ;
+    }
+
+	// Go to file to delete
+	DirectoryEntry directoryEntry;
+	int st = 0 ;
+	while( true )
+	{
+		// read a directory entry
+		st = readdir(fd_dir, directoryEntry);
+		if( st <= 0 || strcmp(directoryEntry.getName() , fileName) == 0)
+		{
+			break;
+		}
+	}
+	if( st <= 0 )
+    {
+        Kernel::perror( "rm" ) ;
+        cout << "rm" << ": unable to find file \n";
+        Kernel::exit(1) ;
+    }
+
+
+	DirectoryEntry dirEntry;
+	int local_offset = -1;
+	FileDescriptor * fileDesc = process.openFiles[fd_dir];
+	while( true )
+	{
+		local_offset = fileDesc->getOffset();
+		// read a directory entry
+		st = readdir(fd_dir, dirEntry);
+		if( st <= 0 )
+		{
+			break;
+		}		
+		
+		fileDesc->setOffset(local_offset - DirectoryEntry::DIRECTORY_ENTRY_SIZE);
+		
+		// write
+		char directoryEntryBuffer[DirectoryEntry::DIRECTORY_ENTRY_SIZE];
+   	 	memset(directoryEntryBuffer, '\0', DirectoryEntry::DIRECTORY_ENTRY_SIZE);
+		dirEntry.write( directoryEntryBuffer , 0) ;
+		int status = 0 ;
+		status = Kernel::write(fd_dir, directoryEntryBuffer, DirectoryEntry::DIRECTORY_ENTRY_SIZE ) ;
+		if( status < 0 )
+		{
+			Kernel::perror( "rm" ) ;
+			Kernel::exit( 4 ) ;
+		}
+
+		fileDesc->setOffset(local_offset + DirectoryEntry::DIRECTORY_ENTRY_SIZE);
+	}
+
+    char directoryEntryBuffer[DirectoryEntry::DIRECTORY_ENTRY_SIZE];
+    memset(directoryEntryBuffer, '\0', DirectoryEntry::DIRECTORY_ENTRY_SIZE);
+	fileDesc->setOffset(local_offset - DirectoryEntry::DIRECTORY_ENTRY_SIZE);
+    int status = 0 ;
+    status = Kernel::write(fd_dir, directoryEntryBuffer, DirectoryEntry::DIRECTORY_ENTRY_SIZE ) ;
+    if( status < 0 )
+    {
+        Kernel::perror( "rm" ) ;
+        Kernel::exit( 4 ) ;
+    }
+	fileDesc->setOffset(local_offset);
+	fileDesc->setSize(local_offset - DirectoryEntry::DIRECTORY_ENTRY_SIZE);
+
+    IndexNode indexNode;
+    openFileSystems->readIndexNode(&indexNode , fileStat.getIno());
+    indexNode.setNlink(indexNode.getNlink() - 1 );
+	if (indexNode.getNlink() == 0) {
+		// free blocks
+		// free any blocks currently allocated to the file
+		int blockSize = fileDesc->getBlockSize();
+		int blocks = (indexNode.getSize() + blockSize-1) / blockSize;
+		for( int i = 0 ; i < blocks ; i ++ )
+		{
+			int address = indexNode.getBlockAddress(i) ;
+			if( address != FileSystem::NOT_A_BLOCK )
+			{
+				openFileSystems->freeBlock(address);
+				indexNode.setBlockAddress(i , FileSystem::NOT_A_BLOCK);
+			}
+		}
+		if (indexNode.getIndirectBlock() != FileSystem::NOT_A_BLOCK) {
+			openFileSystems->freeBlock(indexNode.getIndirectBlock());
+			indexNode.setIndirectBlock(FileSystem::NOT_A_BLOCK);
+		}
+		// update the inode to size 0
+		indexNode.setSize(0);
+	}
+	openFileSystems->writeIndexNode(&indexNode , fileStat.getIno());
+	
+    // call close() to close the file
+    status = Kernel::close( fd_dir ) ;
+    if( status < 0 )
+    {
+        Kernel::perror( "ln" ) ;
+        Kernel::exit( 6 ) ;
+    }
+
+    // ############################################################################
+}
+
+
+
+int Kernel::link( char* fromName, char* toName) {
+    // Operations for fromName  ##################################################
+    int statusFrom = 0 ;
+    // stat the name to get information about the file or directory
+    Stat statFrom;
+    statusFrom = Kernel::stat( fromName , statFrom ) ;
+
+    if( statusFrom < 0 ) {
+        Kernel::perror("Error in Stat -- ln");
+        Kernel::exit(1);
+    }
+    // ############################################################################
+
+    // Operations for fromName  ##################################################
+    int index = -1;
+
+    int ind = 0;
+    while(toName[ind] != '\0') {
+        if (toName[ind] == '/') {
+            index = ind;
+        }
+        ind++;
+    }
+
+    if (index == -1) {
+        Kernel::perror("No file to link to -- ln\n");
+        Kernel::exit(1);
+    }
+
+    // getFileName and Directory name
+    char toDir[512];
+    char fileName[512];
+    memset(toDir, '\0', 512);
+    memset(fileName, '\0', 512);
+    for (int i = 0 ; i < index ; i++) {
+        toDir[i] = toName[i];
+    }
+    ind = 0;
+    while(toName[index + 1] != '\0') {
+        fileName[ind] = toName[index +1];
+        index++;
+        ind++;
+    }
+
+    // open the directory
+    int fd_toDir = Kernel::open( toDir , Kernel::O_RDWR ) ;
+    if( fd_toDir < 0 )
+    {
+        Kernel::perror( "ln" ) ;
+        cout << "ln" << ": unable to open \"" << toDir << "\"\n";
+        Kernel::exit(1) ;
+    }
+
+	// Go to end
+	DirectoryEntry directoryEntry;
+	int st = 0 ;
+	while( true )
+	{
+		// read a directory entry
+		st = readdir(fd_toDir, directoryEntry);
+		if( st <= 0 )
+		{
+			break;
+		}
+	}
+
+    char directoryEntryBuffer[DirectoryEntry::DIRECTORY_ENTRY_SIZE];
+    memset(directoryEntryBuffer, '\0', DirectoryEntry::DIRECTORY_ENTRY_SIZE);
+
+    DirectoryEntry newEntry(statFrom.getIno() , fileName);
+    memset(directoryEntryBuffer, '\0', DirectoryEntry::DIRECTORY_ENTRY_SIZE);
+    newEntry.write( directoryEntryBuffer , 0) ;
+
+    int status = 0 ;
+    status = Kernel::write(fd_toDir, directoryEntryBuffer, DirectoryEntry::DIRECTORY_ENTRY_SIZE ) ;
+    if( status < 0 )
+    {
+        Kernel::perror( "ln" ) ;
+        Kernel::exit( 4 ) ;
+    }
+
+    IndexNode indexNode;
+    openFileSystems->readIndexNode(&indexNode , statFrom.getIno());
+    indexNode.setNlink(indexNode.getNlink() + 1 );
+    openFileSystems->writeIndexNode(&indexNode , statFrom.getIno());
+
+    // call close() to close the file
+    status = Kernel::close( fd_toDir ) ;
+    if( status < 0 )
+    {
+        Kernel::perror( "ln" ) ;
+        Kernel::exit( 6 ) ;
+    }
+
+    // ############################################################################
+}

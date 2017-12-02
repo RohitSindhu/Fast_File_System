@@ -95,6 +95,8 @@ int main(int argc, char ** argv)
 		// mask the file type from the mode
 		short type = (short)( stat.getMode() & Kernel::S_IFMT ) ;
 
+        cout << "NLINKS :: " << stat.getNlink() << endl;
+
 		// if name is a regular file, print the info
 		if( type == Kernel::S_IFREG )
 		{

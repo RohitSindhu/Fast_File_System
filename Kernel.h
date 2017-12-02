@@ -79,6 +79,8 @@ class Kernel
 		static void sync();
 		static int write( int fd , char * buf , int count );
 		static int writedir( int fd , DirectoryEntry& dirp );
+		static int link( char* fromName, char* toName);
+		static int nlink (char* filepath);
 
 		const static int MAX_OPEN_FILE_SYSTEMS = 1 ;
 		const static short ROOT_FILE_SYSTEM = 0 ;

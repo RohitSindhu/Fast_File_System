@@ -21,6 +21,9 @@ int main(int argc, char ** argv)
 	int blocks = (short)atoi(argv[3]) ;
 	int block_total = 0 ;
 
+	// setting the max file blocks for indirect reference
+	IndexNode::MAX_FILE_BLOCKS = IndexNode::MAX_DIRECT_BLOCKS + (block_size/8);
+
 	int inode_size = 64; //For now IndexNode.INDEX_NODE_SIZE
 	int super_blocks = 1 ;
 	int free_list_blocks = 0 ;

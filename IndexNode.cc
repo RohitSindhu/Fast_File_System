@@ -1,6 +1,7 @@
 #include "IndexNode.h"
 #include <stdlib.h>
 #include <string.h>
+#include "FileSystem.h"
 
 #define NOT_A_BLOCK 0x00FFFFFF
 
@@ -136,6 +137,51 @@ void IndexNode::setBlockAddress(int block , int address)
 	else
 	{
 		cout << "invalid block address " << block <<endl;
+	}
+
+}
+
+
+int IndexNode::getBlockAddress(int block, void * handle)
+{
+	FileSystem * fileSysHandle = (FileSystem *) handle;
+	if(block >= 0 && block < MAX_DIRECT_BLOCKS)
+	{
+		return(directBlocks[block]);
+	}
+	else
+	{
+		int blockSize = fileSysHandle->getBlockSize();
+		char* bytes = new char[blockSize];
+		memset(bytes, '\0', blockSize);
+		fileSysHandle->read(bytes, fileSysHandle->getDataBlockOffset() + this->indirectBlock);
+		int indirectRef = block - IndexNode::MAX_DIRECT_BLOCKS;
+
+		int hi = bytes[indirectRef] & 0xff;
+		int lo = bytes[indirectRef + 1] & 0xff;
+		return ((int)(hi << 8 | lo));
+	}
+}
+
+void IndexNode::setBlockAddress(int block , int address , void * handle)
+{
+	FileSystem * fileSysHandle = (FileSystem *) handle;
+	if(block >= 0 && block < MAX_DIRECT_BLOCKS)
+	{
+		directBlocks[block] = address ;
+	}
+	else
+	{
+		int blockSize = fileSysHandle->getBlockSize();
+		char* bytes = new char[blockSize];
+		memset(bytes, '\0', blockSize);
+		fileSysHandle->read(bytes, fileSysHandle->getDataBlockOffset() + this->indirectBlock);
+		int indirectRef = block - IndexNode::MAX_DIRECT_BLOCKS;
+
+		bytes[indirectRef] = (char)(block >> 8);
+		bytes[indirectRef + 1] = (char)block;
+
+		fileSysHandle->write(bytes, fileSysHandle->getDataBlockOffset() + this->indirectBlock);
 	}
 
 }
@@ -321,6 +367,15 @@ void IndexNode::copy( IndexNode& indexNode )
 	indexNode.mtime = mtime ;
 	indexNode.ctime = ctime ;
 }
+
+void IndexNode::setIndirectBlock(int block_num) {
+	this->indirectBlock = block_num;
+}
+
+int IndexNode::getIndirectBlock() {
+	return this->indirectBlock;
+}
+
 /*
 int main(int argc, char ** argv )
 {

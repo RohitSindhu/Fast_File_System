@@ -96,6 +96,17 @@ CMakeFiles/5103P3.dir/dump.cc.o: ../ProcessContext.h
 CMakeFiles/5103P3.dir/dump.cc.o: ../Stat.h
 CMakeFiles/5103P3.dir/dump.cc.o: ../dump.cc
 
+CMakeFiles/5103P3.dir/ln.cc.o: ../BitBlock.h
+CMakeFiles/5103P3.dir/ln.cc.o: ../Block.h
+CMakeFiles/5103P3.dir/ln.cc.o: ../DirectoryEntry.h
+CMakeFiles/5103P3.dir/ln.cc.o: ../FileDescriptor.h
+CMakeFiles/5103P3.dir/ln.cc.o: ../FileSystem.h
+CMakeFiles/5103P3.dir/ln.cc.o: ../IndexNode.h
+CMakeFiles/5103P3.dir/ln.cc.o: ../Kernel.h
+CMakeFiles/5103P3.dir/ln.cc.o: ../ProcessContext.h
+CMakeFiles/5103P3.dir/ln.cc.o: ../Stat.h
+CMakeFiles/5103P3.dir/ln.cc.o: ../ln.cc
+
 CMakeFiles/5103P3.dir/ls.cc.o: ../BitBlock.h
 CMakeFiles/5103P3.dir/ls.cc.o: ../Block.h
 CMakeFiles/5103P3.dir/ls.cc.o: ../DirectoryEntry.h
