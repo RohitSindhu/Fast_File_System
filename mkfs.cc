@@ -8,6 +8,8 @@
 
 #include <stdlib.h>
 
+int IndexNode::MAX_FILE_BLOCKS = 0;
+
 int main(int argc, char ** argv)
 {
 	if(argc != 4)

@@ -10,22 +10,22 @@ rm filesys.dat
 
 echo "howdy, podner" | ./tee /rohit/file.txt
 
-./ls /rohit/file.txt
+#./ls /rohit/file.txt
 
-./ln /rohit/file.txt /abc/newFile.txt
+#./ln /rohit/file.txt /abc/newFile.txt
 
-./ls /rohit/file.txt
+#./ls /rohit/file.txt
 
-./mkdir /abc
+#./mkdir /abc
 
-./ln /rohit/file.txt /abc/newFile.txt
+#./ln /rohit/file.txt /abc/newFile.txt
 
-./ls /rohit/file.txt
+#./ls /rohit/file.txt
 
-./ls /abc/newFile.txt
+#./ls /abc/newFile.txt
 
-./ls /rohit
+#./ls /rohit
 
-./ls /abc
+#./ls /abc
 
 

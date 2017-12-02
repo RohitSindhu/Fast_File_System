@@ -2,6 +2,7 @@
     "files.associations": {
         "cstdlib": "cpp",
         "cstdint": "cpp",
-        "limits": "cpp"
+        "limits": "cpp",
+        "iostream": "cpp"
     }
 }

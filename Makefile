@@ -21,8 +21,8 @@ mkdir: mkdir.cc Stat.o FileDescriptor.o FileSystem.o BitBlock.o IndexNode.o Dire
 cat: cat.cc Stat.o FileDescriptor.o FileSystem.o BitBlock.o IndexNode.o DirectoryEntry.o Block.o SuperBlock.o ProcessContext.o Kernel.o
 	g++  -g cat.cc Stat.o FileDescriptor.o FileSystem.o BitBlock.o IndexNode.o DirectoryEntry.o Block.o SuperBlock.o ProcessContext.o Kernel.o -o cat
 
-mkfs: mkfs.cc BitBlock.o IndexNode.o DirectoryEntry.o Block.o SuperBlock.o
-	g++  -g mkfs.cc BitBlock.o IndexNode.o DirectoryEntry.o Block.o SuperBlock.o -o mkfs
+mkfs: mkfs.cc BitBlock.o IndexNode.o Block.o SuperBlock.o Stat.o DirectoryEntry.o Kernel.o FileSystem.o FileDescriptor.o ProcessContext.o
+	g++  -g mkfs.cc BitBlock.o IndexNode.o Block.o SuperBlock.o Stat.o DirectoryEntry.o Kernel.o FileSystem.o FileDescriptor.o ProcessContext.o -o mkfs
 
 dump: dump.cc
 	g++  -g dump.cc -o dump
@@ -58,5 +58,5 @@ SuperBlock.o: SuperBlock.cc
 	g++  -g -c SuperBlock.cc
 
 clean:
-	rm *.o mkfs ls cat tee cp dump mkdir ln rm
+	rm *.gch *.o mkfs ls cat tee cp dump mkdir ln rm
 

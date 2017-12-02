@@ -91,6 +91,14 @@ void IndexNode::setSize(int newSize)
 	size = newSize;
 }
 
+void IndexNode::setIndirectBlock(int block_num) {
+	this->indirectBlock = block_num;
+}
+
+int IndexNode::getIndirectBlock() {
+	return this->indirectBlock;
+}
+
 /**
  * Gets the size for this IndexNode.
  * This is the number of bytes in the file.
@@ -141,10 +149,9 @@ void IndexNode::setBlockAddress(int block , int address)
 
 }
 
-
 int IndexNode::getBlockAddress(int block, void * handle)
 {
-	FileSystem * fileSysHandle = static_cast<FileSystem *> (handle);
+	FileSystem * fileSysHandle = reinterpret_cast<FileSystem *> (handle);
 	if(block >= 0 && block < MAX_DIRECT_BLOCKS)
 	{
 		return(directBlocks[block]);
@@ -154,18 +161,27 @@ int IndexNode::getBlockAddress(int block, void * handle)
 		int blockSize = fileSysHandle->getBlockSize();
 		char* bytes = new char[blockSize];
 		memset(bytes, '\0', blockSize);
-		fileSysHandle->read(bytes, fileSysHandle->getDataBlockOffset() + this->indirectBlock);
-		int indirectRef = block - IndexNode::MAX_DIRECT_BLOCKS;
+		
+		fileSysHandle->read(bytes, this->indirectBlock );
 
-		int hi = bytes[indirectRef] & 0xff;
-		int lo = bytes[indirectRef + 1] & 0xff;
-		return ((int)(hi << 8 | lo));
+		int indirectRef = block - IndexNode::MAX_DIRECT_BLOCKS - 1;
+
+		int b0 = bytes[indirectRef*3] & 0xff;
+		int b1 = bytes[indirectRef*3 + 1] & 0xff;
+		int b2 = bytes[indirectRef*3 + 1] & 0xff;
+		
+		int toReturn = b2 << 16 | b1 << 8 | b0;
+		
+		cout << "BYTES :: " << bytes << endl;
+		cout << "toReturn getBlockAddress :: "  << toReturn << endl;
+
+		return toReturn;
 	}
 }
 
 void IndexNode::setBlockAddress(int block , int address , void * handle)
 {
-	FileSystem * fileSysHandle = static_cast<FileSystem *> (handle);
+	FileSystem * fileSysHandle = reinterpret_cast<FileSystem *> (handle);
 	if(block >= 0 && block < MAX_DIRECT_BLOCKS)
 	{
 		directBlocks[block] = address ;
@@ -175,13 +191,27 @@ void IndexNode::setBlockAddress(int block , int address , void * handle)
 		int blockSize = fileSysHandle->getBlockSize();
 		char* bytes = new char[blockSize];
 		memset(bytes, '\0', blockSize);
-		fileSysHandle->read(bytes, fileSysHandle->getDataBlockOffset() + this->indirectBlock);
-		int indirectRef = block - IndexNode::MAX_DIRECT_BLOCKS;
+		
+		fileSysHandle->read(bytes, this->indirectBlock );
 
-		bytes[indirectRef] = (char)(block >> 8);
-		bytes[indirectRef + 1] = (char)block;
+		int indirectRef = block - IndexNode::MAX_DIRECT_BLOCKS - 1;
 
-		fileSysHandle->write(bytes, fileSysHandle->getDataBlockOffset() + this->indirectBlock);
+		bytes[indirectRef*3]   = (unsigned char)(address >> 16);
+		bytes[indirectRef*3+1] = (unsigned char)(address >> 8);
+		bytes[indirectRef*3+2] = (unsigned char)(address);
+
+
+		int b0 = bytes[indirectRef*3] & 0xff;
+		int b1 = bytes[indirectRef*3 + 1] & 0xff;
+		int b2 = bytes[indirectRef*3 + 1] & 0xff;
+		
+		int toReturn = b2 << 16 | b1 << 8 | b0;
+
+		cout << "toReturn XXXXXXXXXXXXXXXXXXXX :: "  << address << "----" << toReturn << endl;
+		cout << "BYTES :: " << bytes << endl;
+		cout << "indirectRef setBlockAddress :: "  << indirectRef << endl;
+
+		fileSysHandle->write(bytes, this->indirectBlock );
 	}
 
 }
@@ -366,14 +396,6 @@ void IndexNode::copy( IndexNode& indexNode )
 	indexNode.atime = atime ;
 	indexNode.mtime = mtime ;
 	indexNode.ctime = ctime ;
-}
-
-void IndexNode::setIndirectBlock(int block_num) {
-	this->indirectBlock = block_num;
-}
-
-int IndexNode::getIndirectBlock() {
-	return this->indirectBlock;
 }
 
 /*

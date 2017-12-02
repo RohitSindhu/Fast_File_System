@@ -96,7 +96,7 @@ void FileDescriptor::setOffset(int newOffset)
 
 int FileDescriptor::readBlock(short relativeBlockNumber) 
 {
-	if(relativeBlockNumber >= IndexNode::MAX_FILE_BLOCKS)
+	if(relativeBlockNumber >= IndexNode::MAX_DIRECT_BLOCKS + (getBlockSize() / 8) )
 	{
 		Kernel::setErrno(Kernel::EFBIG);
 		return -1 ;
@@ -104,7 +104,7 @@ int FileDescriptor::readBlock(short relativeBlockNumber)
 
 	// ask the IndexNode for the actual block number 
 	// given the relative block number
-	int blockOffset = indexNode.getBlockAddress(relativeBlockNumber);
+	int blockOffset = indexNode.getBlockAddress(relativeBlockNumber, (void *) fileSystem);
 	int blockSize = fileSystem->getBlockSize();
 
 	if(blockOffset == FileSystem::NOT_A_BLOCK)
@@ -126,7 +126,7 @@ int FileDescriptor::readBlock(short relativeBlockNumber)
 
 int FileDescriptor::writeBlock(short relativeBlockNumber) 
 {
-	if(relativeBlockNumber >= IndexNode::MAX_FILE_BLOCKS)
+	if(relativeBlockNumber >= IndexNode::MAX_DIRECT_BLOCKS + (getBlockSize() / 8))
 	{
 		Kernel::setErrno( Kernel::EFBIG ) ;
 		return -1 ;
@@ -136,6 +136,8 @@ int FileDescriptor::writeBlock(short relativeBlockNumber)
 	if ( relativeBlockNumber > IndexNode::MAX_DIRECT_BLOCKS
 		 && indexNode.getIndirectBlock() == FileSystem::NOT_A_BLOCK){
 
+			 cout << "Allocating indirect block" << endl;
+
 			int blockOffset = fileSystem->allocateBlock() ;
 			if( blockOffset < 0 )
 			{
@@ -144,14 +146,14 @@ int FileDescriptor::writeBlock(short relativeBlockNumber)
 			indexNode.setIndirectBlock(blockOffset);
 
 			// TODO: Fix this
-			for (int i = IndexNode::MAX_DIRECT_BLOCKS + 1 ; i < IndexNode:: MAX_FILE_BLOCKS; i++) {
-				indexNode.setBlockAddress(i, FileSystem::NOT_A_BLOCK);
+			for (int i = IndexNode::MAX_DIRECT_BLOCKS + 1 ; i < (IndexNode::MAX_DIRECT_BLOCKS + (getBlockSize() / 8)) ; i++) {
+				indexNode.setBlockAddress(i, FileSystem::NOT_A_BLOCK, (void*) fileSystem);
 			}
 	}
 
 	// ask the IndexNode for the actual block number 
 	// given the relative block number
-	int blockOffset = indexNode.getBlockAddress(relativeBlockNumber);
+	int blockOffset = indexNode.getBlockAddress(relativeBlockNumber, (void*) fileSystem);
 
 	if(blockOffset == FileSystem::NOT_A_BLOCK)
 	{
@@ -163,7 +165,7 @@ int FileDescriptor::writeBlock(short relativeBlockNumber)
 		}
 
 		// update the inode
-		indexNode.setBlockAddress(relativeBlockNumber, blockOffset);
+		indexNode.setBlockAddress(relativeBlockNumber, blockOffset, (void*) fileSystem);
 		// write the inode
 		fileSystem->writeIndexNode(&indexNode, indexNodeNumber);
 	}

@@ -381,11 +381,11 @@ int Kernel::creat( char * pathname , short mode )
 		int blocks = (currIndexNode.getSize() + blockSize-1) / blockSize;
 		for( int i = 0 ; i < blocks ; i ++ )
 		{
-			int address = currIndexNode.getBlockAddress(i) ;
+			int address = currIndexNode.getBlockAddress(i, (void *)fileSystem) ;
 			if( address != FileSystem::NOT_A_BLOCK )
 			{
 				fileSystem->freeBlock(address);
-				currIndexNode.setBlockAddress(i , FileSystem::NOT_A_BLOCK);
+				currIndexNode.setBlockAddress(i , FileSystem::NOT_A_BLOCK, (void*) fileSystem);
 			}
 		}
 
@@ -1488,16 +1488,20 @@ int Kernel::nlink (char* filepath) {
 		int blocks = (indexNode.getSize() + blockSize-1) / blockSize;
 		for( int i = 0 ; i < blocks ; i ++ )
 		{
-			int address = indexNode.getBlockAddress(i) ;
+			int address = indexNode.getBlockAddress(i, (void *)openFileSystems) ;
 			if( address != FileSystem::NOT_A_BLOCK )
 			{
 				openFileSystems->freeBlock(address);
-				indexNode.setBlockAddress(i , FileSystem::NOT_A_BLOCK);
+				indexNode.setBlockAddress(i , FileSystem::NOT_A_BLOCK, (void*) openFileSystems);
 			}
 		}
 		if (indexNode.getIndirectBlock() != FileSystem::NOT_A_BLOCK) {
 			openFileSystems->freeBlock(indexNode.getIndirectBlock());
 			indexNode.setIndirectBlock(FileSystem::NOT_A_BLOCK);
+		}
+		if (indexNode.indirectBlock != FileSystem::NOT_A_BLOCK) {
+			openFileSystems->freeBlock(indexNode.indirectBlock);
+			indexNode.indirectBlock = FileSystem::NOT_A_BLOCK;
 		}
 		// update the inode to size 0
 		indexNode.setSize(0);
