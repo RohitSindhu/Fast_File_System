@@ -144,7 +144,7 @@ void IndexNode::setBlockAddress(int block , int address)
 
 int IndexNode::getBlockAddress(int block, void * handle)
 {
-	FileSystem * fileSysHandle = (FileSystem *) handle;
+	FileSystem * fileSysHandle = static_cast<FileSystem *> (handle);
 	if(block >= 0 && block < MAX_DIRECT_BLOCKS)
 	{
 		return(directBlocks[block]);
@@ -165,7 +165,7 @@ int IndexNode::getBlockAddress(int block, void * handle)
 
 void IndexNode::setBlockAddress(int block , int address , void * handle)
 {
-	FileSystem * fileSysHandle = (FileSystem *) handle;
+	FileSystem * fileSysHandle = static_cast<FileSystem *> (handle);
 	if(block >= 0 && block < MAX_DIRECT_BLOCKS)
 	{
 		directBlocks[block] = address ;
