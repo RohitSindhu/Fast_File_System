@@ -309,12 +309,17 @@ void IndexNode::write(char * buffer, int offset)
 	buffer[offset+8+2] = (unsigned char)(size >> 8); 
 	buffer[offset+8+3] = (unsigned)(size);
 
+	buffer[offset+12]   = (unsigned char)(indirectBlock >> 24);
+	buffer[offset+12+1] = (unsigned char)(indirectBlock >> 16);
+	buffer[offset+12+2] = (unsigned char)(indirectBlock >> 8); 
+	buffer[offset+12+3] = (unsigned)(indirectBlock);
+
 	// write the directBlocks info 3 bytes at a time
 	for( int i = 0 ; i < MAX_DIRECT_BLOCKS ; i ++ )
 	{
-		buffer[offset+12+3*i]   = (unsigned char)(directBlocks[i] >> 16);
-		buffer[offset+12+3*i+1] = (unsigned char)(directBlocks[i] >> 8);
-		buffer[offset+12+3*i+2] = (unsigned char)(directBlocks[i]);
+		buffer[offset+16+3*i]   = (unsigned char)(directBlocks[i] >> 16);
+		buffer[offset+16+3*i+1] = (unsigned char)(directBlocks[i] >> 8);
+		buffer[offset+16+3*i+2] = (unsigned char)(directBlocks[i]);
 	}
 
 	// leave room for indirectBlock, doubleIndirectBlock, tripleIndirectBlock
@@ -365,12 +370,18 @@ void IndexNode::read(char * buffer , int offset)
 	b0 = buffer[offset+8+3] & 0xff ;
 	size = b3 << 24 | b2 << 16 | b1 << 8 | b0 ; 
 
+	b3 = buffer[offset+12] & 0xff ;
+	b2 = buffer[offset+12+1] & 0xff ;
+	b1 = buffer[offset+12+2] & 0xff ;
+	b0 = buffer[offset+12+3] & 0xff ;
+	indirectBlock = b3 << 24 | b2 << 16 | b1 << 8 | b0 ; 
+
 	// read the block address info 3 bytes at a time
 	for( int i = 0 ; i < MAX_DIRECT_BLOCKS ; i ++ )
 	{
-		b2 = buffer[offset+12+i*3] & 0xff ;
-		b1 = buffer[offset+12+i*3+1] & 0xff ;
-		b0 = buffer[offset+12+i*3+2] & 0xff ;
+		b2 = buffer[offset+16+i*3] & 0xff ;
+		b1 = buffer[offset+16+i*3+1] & 0xff ;
+		b0 = buffer[offset+16+i*3+2] & 0xff ;
 		directBlocks[i] = b2 << 16 | b1 << 8 | b0 ; 
 	}
 

@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define BUF_SIZE 4096
+#define BUF_SIZE 4096*4
 
 int main(int argc, char ** argv)
 {
@@ -66,6 +66,7 @@ int main(int argc, char ** argv)
 
 			// write whatever we read to standard output
 			cout << buffer << endl;
+			memset(buffer, '\0', BUF_SIZE);
 			///     System.out.write( buffer , 0 , rd_count ) ;
 		}
 

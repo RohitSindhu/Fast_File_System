@@ -96,7 +96,7 @@ void FileDescriptor::setOffset(int newOffset)
 
 int FileDescriptor::readBlock(short relativeBlockNumber) 
 {
-	if(relativeBlockNumber >= IndexNode::MAX_DIRECT_BLOCKS + (getBlockSize() / 3) )
+	if(relativeBlockNumber > IndexNode::MAX_DIRECT_BLOCKS + (getBlockSize() / 3) )
 	{
 		Kernel::setErrno(Kernel::EFBIG);
 		return -1 ;
@@ -126,7 +126,7 @@ int FileDescriptor::readBlock(short relativeBlockNumber)
 
 int FileDescriptor::writeBlock(short relativeBlockNumber) 
 {
-	if(relativeBlockNumber >= IndexNode::MAX_DIRECT_BLOCKS + (getBlockSize() / 3))
+	if(relativeBlockNumber > IndexNode::MAX_DIRECT_BLOCKS + (getBlockSize() / 3))
 	{
 		Kernel::setErrno( Kernel::EFBIG ) ;
 		return -1 ;
@@ -149,6 +149,7 @@ int FileDescriptor::writeBlock(short relativeBlockNumber)
 			for (int i = IndexNode::MAX_DIRECT_BLOCKS ; i < (IndexNode::MAX_DIRECT_BLOCKS + (getBlockSize() / 3) + 1) ; i++) {
 				indexNode.setBlockAddress(i, FileSystem::NOT_A_BLOCK, (void*) fileSystem);
 			}
+			fileSystem->writeIndexNode(&indexNode, indexNodeNumber);
 	}
 
 	// ask the IndexNode for the actual block number 

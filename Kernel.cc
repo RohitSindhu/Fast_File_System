@@ -632,6 +632,7 @@ int Kernel::read( int fd , char * buf , int count )
 	int blockSize = file->getBlockSize() ;
 	char * bytes = file->getBytes() ;
 	int readCount = 0 ;
+	cout << "File Offset " << offset << endl;
 	for( int i = 0 ; i < count ; i ++ )
 	{
 		// if we read to the end of the file, stop reading
@@ -642,14 +643,18 @@ int Kernel::read( int fd , char * buf , int count )
 		if( ( i == 0 ) || ( ( offset % blockSize ) == 0 ) )
 		{
 			status = file->readBlock( (short)( offset / blockSize ) ) ;
-			if( status < 0 )
+			if( status < 0 ) {
+				cout << "Error in read block" << status << endl;	
 				return status ;
+			}
 		}
 		// copy a byte from the file buffer to the read buffer
 		buf[i] = bytes[ offset % blockSize ] ;
+		 cout << "-" << bytes[ offset % blockSize ] ;
 		offset ++ ;
 		readCount ++ ;
 	}
+	cout << "Read Offset " << offset << endl;
 	// update the offset
 	file->setOffset( offset ) ;
 
