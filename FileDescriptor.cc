@@ -96,7 +96,7 @@ void FileDescriptor::setOffset(int newOffset)
 
 int FileDescriptor::readBlock(short relativeBlockNumber) 
 {
-	if(relativeBlockNumber >= IndexNode::MAX_DIRECT_BLOCKS + (getBlockSize() / 8) )
+	if(relativeBlockNumber >= IndexNode::MAX_DIRECT_BLOCKS + (getBlockSize() / 3) )
 	{
 		Kernel::setErrno(Kernel::EFBIG);
 		return -1 ;
@@ -126,14 +126,14 @@ int FileDescriptor::readBlock(short relativeBlockNumber)
 
 int FileDescriptor::writeBlock(short relativeBlockNumber) 
 {
-	if(relativeBlockNumber >= IndexNode::MAX_DIRECT_BLOCKS + (getBlockSize() / 8))
+	if(relativeBlockNumber >= IndexNode::MAX_DIRECT_BLOCKS + (getBlockSize() / 3))
 	{
 		Kernel::setErrno( Kernel::EFBIG ) ;
 		return -1 ;
 	}
 
 	// If there is no indirect block 
-	if ( relativeBlockNumber > IndexNode::MAX_DIRECT_BLOCKS
+	if ( relativeBlockNumber > IndexNode::MAX_DIRECT_BLOCKS - 1
 		 && indexNode.getIndirectBlock() == FileSystem::NOT_A_BLOCK){
 
 			 cout << "Allocating indirect block" << endl;
@@ -146,7 +146,7 @@ int FileDescriptor::writeBlock(short relativeBlockNumber)
 			indexNode.setIndirectBlock(blockOffset);
 
 			// TODO: Fix this
-			for (int i = IndexNode::MAX_DIRECT_BLOCKS + 1 ; i < (IndexNode::MAX_DIRECT_BLOCKS + (getBlockSize() / 8)) ; i++) {
+			for (int i = IndexNode::MAX_DIRECT_BLOCKS ; i < (IndexNode::MAX_DIRECT_BLOCKS + (getBlockSize() / 3) + 1) ; i++) {
 				indexNode.setBlockAddress(i, FileSystem::NOT_A_BLOCK, (void*) fileSystem);
 			}
 	}
@@ -157,6 +157,7 @@ int FileDescriptor::writeBlock(short relativeBlockNumber)
 
 	if(blockOffset == FileSystem::NOT_A_BLOCK)
 	{
+		cout << "Inside assigning block " << relativeBlockNumber << endl;
 		// allocate a block; quit if we can't
 		blockOffset = fileSystem->allocateBlock() ;
 		if( blockOffset < 0 )
@@ -169,6 +170,13 @@ int FileDescriptor::writeBlock(short relativeBlockNumber)
 		// write the inode
 		fileSystem->writeIndexNode(&indexNode, indexNodeNumber);
 	}
+		
+		
+		cout << "Writing Bytes :: " ;
+		for (int i = 0  ; i < fileSystem->getBlockSize() ; i+= 1) {
+			cout << bytes[i];
+		}
+		cout << endl;
 
 	// write the actual block from bytes
 	fileSystem->write(bytes, fileSystem->getDataBlockOffset() + blockOffset);

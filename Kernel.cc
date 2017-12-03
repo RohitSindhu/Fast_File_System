@@ -1499,10 +1499,6 @@ int Kernel::nlink (char* filepath) {
 			openFileSystems->freeBlock(indexNode.getIndirectBlock());
 			indexNode.setIndirectBlock(FileSystem::NOT_A_BLOCK);
 		}
-		if (indexNode.indirectBlock != FileSystem::NOT_A_BLOCK) {
-			openFileSystems->freeBlock(indexNode.indirectBlock);
-			indexNode.indirectBlock = FileSystem::NOT_A_BLOCK;
-		}
 		// update the inode to size 0
 		indexNode.setSize(0);
 	}

@@ -13,7 +13,6 @@ class IndexNode
 		const static int INDEX_NODE_SIZE = 64 ;
 		const static int MAX_DIRECT_BLOCKS = 1 ;
 		static int MAX_FILE_BLOCKS ;
-		int indirectBlock;//Not yet implemented.
 
 	private:
 		unsigned short mode;
@@ -22,7 +21,7 @@ class IndexNode
 		unsigned short gid;
 		int size;
 		int directBlocks[10];
-		//int indirectBlock;//Not yet implemented.
+		int indirectBlock;//Not yet implemented.
 		int doubleIndirectBlock;//Not yet implemented.
 		int tripleIndirectBlock;//Not yet implemented.
 		int atime;//Not yet implemented.
