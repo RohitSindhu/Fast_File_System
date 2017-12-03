@@ -6,7 +6,7 @@
 #include "DirectoryEntry.h"
 #include "Stat.h"
 #include <stdlib.h>
-#include <string.h>
+#include <cstring>
 
 int main(int argc, char ** argv)
 {
@@ -39,7 +39,6 @@ int main(int argc, char ** argv)
 	// for each argument given on the command line
 	for( int i = 1 ; i < argc; i ++ )
 	{
-		// given the argument a better name
 		strcpy(name, argv[i]);
 		int status = 0 ;
 
@@ -79,15 +78,19 @@ int main(int argc, char ** argv)
 
 		// get file info for ".."
 		Stat parentStat;
-		sprintf(parentName, "%s/..", name);
+
+		string fullPath(argv[i]);
+		// remove trailing '/'
+		fullPath = fullPath.substr(0, fullPath.find_last_not_of("/"));
+		string parentDirName = fullPath.substr(0, fullPath.find_last_of("/"));
+
+		sprintf(parentName, parentDirName.c_str());
 		Kernel::stat(parentName , parentStat);
 
 		// add entry for ".."
 		DirectoryEntry parent(parentStat.getIno() , "..");
 		memset(directoryEntryBuffer, '\0', DirectoryEntry::DIRECTORY_ENTRY_SIZE);
 		parent.write( directoryEntryBuffer , 0 );
-
-		cout << directoryEntryBuffer << endl;
 
 		status = Kernel::write(newDir , directoryEntryBuffer, DirectoryEntry::DIRECTORY_ENTRY_SIZE) ;
 		if( status < 0 )
@@ -104,16 +107,17 @@ int main(int argc, char ** argv)
 			Kernel::exit( 6 ) ;
 		}
 
-//		Stat stat;
-  //      status = Kernel::stat( name , stat ) ;
+		// Update new directory entry's link count
+		FileSystem *fileSystem = Kernel::openFileSystems;
+		IndexNode indexNode;
 
-//		if(status == -1)
-//		{
-//			cout <<"shit\n" <<endl;
-//		}
-	
-		
-		
+		fileSystem->readIndexNode(&indexNode, selfStat.getIno());
+		indexNode.setNlink(2);
+		fileSystem->writeIndexNode(&indexNode, selfStat.getIno());
+		  
+		fileSystem->readIndexNode(&indexNode, parent.getIno());
+		indexNode.setNlink(indexNode.getNlink() + 1);
+		fileSystem->writeIndexNode(&indexNode, parent.getIno());    
 	}
 
 	// exit with success if we process all the arguments

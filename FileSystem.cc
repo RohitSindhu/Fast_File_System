@@ -180,6 +180,23 @@ void FileSystem::freeBlock(int dataBlockNumber)
 	freeListBitBlock->write(file);
 }
 
+
+void FileSystem::checkBlocks(map<int, char> allocatedBlocks) {
+	for ( int i = 0 ; i < blockCount ; i++) {
+		loadFreeListBlock(i);
+		bool isSet = freeListBitBlock->isBitSet(i % (blockSize * 8));
+		map<int,char>::iterator it = allocatedBlocks.find(i);
+		if(it == allocatedBlocks.end() && isSet) {
+			cout << "Block number :: " << dataBlockOffset + i << " is marked as set but not allocated" << endl;
+		}
+		
+		if (it != allocatedBlocks.end() && !isSet) {
+			cout << "Block number :: " << dataBlockOffset + i << " is allocated but not marked as set" << endl;
+		}
+	}
+}
+
+
 /**
  * Allocate a data block from the list of free blocks.
  * @return the data block number which was allocated; -1 if no blocks 
