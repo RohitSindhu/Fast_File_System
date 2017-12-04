@@ -1,3 +1,7 @@
+/** Rohit Sindhu [sindh010]
+ *  Aravind Alagiri Ramkumar [alagi005]
+ *  Aparna Mahadevan [mahad028]
+ */
 #ifndef STAT_H
 #define STAT_H
 

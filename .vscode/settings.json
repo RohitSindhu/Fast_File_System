@@ -3,6 +3,9 @@
         "cstdlib": "cpp",
         "cstdint": "cpp",
         "limits": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "map": "cpp",
+        "vector": "cpp",
+        "fstream": "cpp"
     }
 }

@@ -1,3 +1,7 @@
+/** Rohit Sindhu [sindh010]
+ *  Aravind Alagiri Ramkumar [alagi005]
+ *  Aparna Mahadevan [mahad028]
+ */
 #include "Kernel.h"
 #include "DirectoryEntry.h"
 #include "Stat.h"
@@ -31,7 +35,8 @@ int main(int argc, char ** argv) {
 
 
     int status = 0;
-    status = Kernel::nlink(name);
+    // unlink the file
+    status = Kernel::unlink(name);
 
     if (status < 0) {
         cout << "Failed to link files" << endl;

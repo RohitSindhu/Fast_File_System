@@ -1,31 +1,50 @@
+ #  Rohit Sindhu [sindh010]
+ #  Aravind Alagiri Ramkumar [alagi005]
+ #  Aparna Mahadevan [mahad028]
+
 make clean
 
 make all
 
 rm filesys.dat
 
+# creating file system
 ./mkfs filesys.dat 256 40
 
-./mkdir /rohit
+# make a dir
+./mkdir /ara
 
-echo "howdy, podner" | ./tee /rohit/file.txt
+# create a file
+echo "howdy, podner" | ./tee /ara/file.txt
 
-#./ls /rohit/file.txt
+# see if the file was created
+./ls /ara/
 
-#./ln /rohit/file.txt /abc/newFile.txt
+# create target dir
+./mkdir /dir
 
-#./ls /rohit/file.txt
+# try linking
+./ln /ara/file.txt /dir/newFile.txt
 
-#./mkdir /abc
+# see if the file was created
+./ls /ara
+./ls /dir
 
-#./ln /rohit/file.txt /abc/newFile.txt
+# create a big file
+cat wr.txt | ./tee /ara/wrFile.txt
 
-#./ls /rohit/file.txt
+./ls /ara
+./ls /dir
 
-#./ls /abc/newFile.txt
+# see contents of file 
+./cat /ara/wrFile.txt
 
-#./ls /rohit
+# remove the file, should free blocks
+./rm /ara/wrFile.txt
+./ls /ara
+./ls /dir
 
-#./ls /abc
-
-
+# remove nlinks to one file, other file should still exist
+./rm /dir/newFile.txt
+./ls /ara
+./ls /dir

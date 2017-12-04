@@ -1,3 +1,7 @@
+/** Rohit Sindhu [sindh010]
+ *  Aravind Alagiri Ramkumar [alagi005]
+ *  Aparna Mahadevan [mahad028]
+ */
 #ifndef BLOCK_H
 #define BLOCK_H
 

@@ -1,3 +1,7 @@
+/** Rohit Sindhu [sindh010]
+ *  Aravind Alagiri Ramkumar [alagi005]
+ *  Aparna Mahadevan [mahad028]
+ */
 #include "FileDescriptor.h"
 #include "Kernel.h"
 #include <stdlib.h>
@@ -96,6 +100,7 @@ void FileDescriptor::setOffset(int newOffset)
 
 int FileDescriptor::readBlock(short relativeBlockNumber) 
 {
+	// relative block number should be less than direct blocks number plus number of blocks values stored in indirect block
 	if(relativeBlockNumber > IndexNode::MAX_DIRECT_BLOCKS + (getBlockSize() / 3) )
 	{
 		Kernel::setErrno(Kernel::EFBIG);
@@ -126,18 +131,16 @@ int FileDescriptor::readBlock(short relativeBlockNumber)
 
 int FileDescriptor::writeBlock(short relativeBlockNumber) 
 {
+	// relative block number should be less than direct blocks number plus number of blocks values stored in indirect block
 	if(relativeBlockNumber > IndexNode::MAX_DIRECT_BLOCKS + (getBlockSize() / 3))
 	{
 		Kernel::setErrno( Kernel::EFBIG ) ;
 		return -1 ;
 	}
 
-	// If there is no indirect block 
+	// If there is no indirect block, allocate a indirect block
 	if ( relativeBlockNumber > IndexNode::MAX_DIRECT_BLOCKS - 1
 		 && indexNode.getIndirectBlock() == FileSystem::NOT_A_BLOCK){
-
-			 cout << "Allocating indirect block" << endl;
-
 			int blockOffset = fileSystem->allocateBlock() ;
 			if( blockOffset < 0 )
 			{
@@ -158,7 +161,6 @@ int FileDescriptor::writeBlock(short relativeBlockNumber)
 
 	if(blockOffset == FileSystem::NOT_A_BLOCK)
 	{
-		cout << "Inside assigning block " << relativeBlockNumber << endl;
 		// allocate a block; quit if we can't
 		blockOffset = fileSystem->allocateBlock() ;
 		if( blockOffset < 0 )
@@ -171,13 +173,6 @@ int FileDescriptor::writeBlock(short relativeBlockNumber)
 		// write the inode
 		fileSystem->writeIndexNode(&indexNode, indexNodeNumber);
 	}
-		
-		
-		cout << "Writing Bytes :: " ;
-		for (int i = 0  ; i < fileSystem->getBlockSize() ; i+= 1) {
-			cout << bytes[i];
-		}
-		cout << endl;
 
 	// write the actual block from bytes
 	fileSystem->write(bytes, fileSystem->getDataBlockOffset() + blockOffset);

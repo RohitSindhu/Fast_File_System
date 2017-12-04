@@ -1,3 +1,7 @@
+/** Rohit Sindhu [sindh010]
+ *  Aravind Alagiri Ramkumar [alagi005]
+ *  Aparna Mahadevan [mahad028]
+ */
 /**
  * An mkdir for a simulated file system.
  * @author Ray Ontko -> Converted to C++ by Kwangsung

@@ -1,3 +1,7 @@
+/** Rohit Sindhu [sindh010]
+ *  Aravind Alagiri Ramkumar [alagi005]
+ *  Aparna Mahadevan [mahad028]
+ */
 /**
  * Reads a sequence of files and writes them to standard output.
  * A simple cat program for a simulated file system.

@@ -1,3 +1,7 @@
+/** Rohit Sindhu [sindh010]
+ *  Aravind Alagiri Ramkumar [alagi005]
+ *  Aparna Mahadevan [mahad028]
+ */
 #include "IndexNode.h"
 #include <stdlib.h>
 #include <string.h>
@@ -18,7 +22,7 @@ IndexNode::IndexNode()
 		directBlocks[i] = NOT_A_BLOCK;
 	}
 
-	indirectBlock = NOT_A_BLOCK;//Not yet implemented.
+	indirectBlock = NOT_A_BLOCK;
 	doubleIndirectBlock = NOT_A_BLOCK;//Not yet implemented.
 	tripleIndirectBlock = NOT_A_BLOCK;//Not yet implemented.
 	atime = 0 ;//Not yet implemented.
@@ -149,6 +153,7 @@ void IndexNode::setBlockAddress(int block , int address)
 
 }
 
+// Funtion to get relative address from direct and indirect block
 int IndexNode::getBlockAddress(int block, void * handle)
 {
 	FileSystem * fileSysHandle = reinterpret_cast<FileSystem *> (handle);
@@ -158,9 +163,7 @@ int IndexNode::getBlockAddress(int block, void * handle)
 	}
 	else
 	{
-
 		if (this->indirectBlock == NOT_A_BLOCK) {
-			cout << "Indirect block not allocated" << endl;
 			return NOT_A_BLOCK;
 		}
 
@@ -171,31 +174,17 @@ int IndexNode::getBlockAddress(int block, void * handle)
 		fileSysHandle->read(bytes, fileSysHandle->getDataBlockOffset() + this->indirectBlock );
 
 		int indirectRef = block - IndexNode::MAX_DIRECT_BLOCKS;
-		cout << "Indirect refrence = " << indirectRef << endl;
 
 		int b0 = bytes[indirectRef*3] & 0xff;
 		int b1 = bytes[indirectRef*3 + 1] & 0xff;
 		int b2 = bytes[indirectRef*3 + 2] & 0xff;
-		
-		//int toReturn = b2 << 16 | b1 << 8 | b0;
 		int toReturn = b0 << 16 | b1 << 8 | b2;
-		
-		cout << "getBlockAddress BYTES :: ";
-		for (int i = 0  ; i < blockSize/3 ; i+= 1) {
-			int b0 = bytes[i*3] & 0xff;
-			int b1 = bytes[i*3 + 1] & 0xff;
-			int b2 = bytes[i*3 + 2] & 0xff;
-			
-			int toReturn = b0 << 16 | b1 << 8 | b2;
-			cout << toReturn << " ";
-		}
-		cout << endl;
-		cout << "toReturn getBlockAddress :: "  << toReturn << endl;
 
 		return toReturn;
 	}
 }
 
+// Funtion to set relative address in direct and indirect block
 void IndexNode::setBlockAddress(int block , int address , void * handle)
 {
 	FileSystem * fileSysHandle = reinterpret_cast<FileSystem *> (handle);
@@ -211,35 +200,10 @@ void IndexNode::setBlockAddress(int block , int address , void * handle)
 		
 		fileSysHandle->read(bytes, fileSysHandle->getDataBlockOffset() + this->indirectBlock );
 		int indirectRef = block - IndexNode::MAX_DIRECT_BLOCKS;
-		
-		cout << "setBlockAddress Initial BYTES :: " ;
-		for (int i = 0  ; i < blockSize/3 ; i+= 1) {
-			int b0 = bytes[i*3] & 0xff;
-			int b1 = bytes[i*3 + 1] & 0xff;
-			int b2 = bytes[i*3 + 2] & 0xff;
-			
-			int toReturn = b0 << 16 | b1 << 8 | b2;
-			cout << toReturn << " ";
-		}
-		cout << endl;
-		cout << "Address :: " << address << endl;
 
 		bytes[indirectRef*3]   = (unsigned char)(address >> 16);
 		bytes[indirectRef*3+1] = (unsigned char)(address >> 8);
 		bytes[indirectRef*3+2] = (unsigned char)(address);
-
-		// cout << "toReturn XXXXXXXXXXXXXXXXXXXX :: "  << address << "----" << toReturn << endl;
-		cout << "setBlockAddress BYTES :: ";
-		for (int i = 0  ; i < blockSize/3 ; i+= 1) {
-			int b0 = bytes[i*3] & 0xff;
-			int b1 = bytes[i*3 + 1] & 0xff;
-			int b2 = bytes[i*3 + 2] & 0xff;
-			
-			int toReturn = b0 << 16 | b1 << 8 | b2;
-			cout << toReturn << " ";
-		}
-		cout << endl;
-		cout << "indirectRef setBlockAddress :: "  << indirectRef << endl;
 
 		fileSysHandle->write(bytes, fileSysHandle->getDataBlockOffset() + this->indirectBlock );
 	}
@@ -309,6 +273,7 @@ void IndexNode::write(char * buffer, int offset)
 	buffer[offset+8+2] = (unsigned char)(size >> 8); 
 	buffer[offset+8+3] = (unsigned)(size);
 
+	// writing the indirect block
 	buffer[offset+12]   = (unsigned char)(indirectBlock >> 24);
 	buffer[offset+12+1] = (unsigned char)(indirectBlock >> 16);
 	buffer[offset+12+2] = (unsigned char)(indirectBlock >> 8); 
@@ -370,6 +335,7 @@ void IndexNode::read(char * buffer , int offset)
 	b0 = buffer[offset+8+3] & 0xff ;
 	size = b3 << 24 | b2 << 16 | b1 << 8 | b0 ; 
 
+	// read the indirect block
 	b3 = buffer[offset+12] & 0xff ;
 	b2 = buffer[offset+12+1] & 0xff ;
 	b1 = buffer[offset+12+2] & 0xff ;

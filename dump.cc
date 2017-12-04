@@ -1,3 +1,7 @@
+/** Rohit Sindhu [sindh010]
+ *  Aravind Alagiri Ramkumar [alagi005]
+ *  Aparna Mahadevan [mahad028]
+ */
 /**
  * a simple dump program
  * prints the offset, hexvalue, and decimal value for each byte in a

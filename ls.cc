@@ -1,3 +1,7 @@
+/** Rohit Sindhu [sindh010]
+ *  Aravind Alagiri Ramkumar [alagi005]
+ *  Aparna Mahadevan [mahad028]
+ */
 /**
  * A simple directory listing program for a simulated file system.
  * @author Ray Ontko -> Converted to C++ by Kwangsung
@@ -94,8 +98,6 @@ int main(int argc, char ** argv)
 
 		// mask the file type from the mode
 		short type = (short)( stat.getMode() & Kernel::S_IFMT ) ;
-
-        cout << "NLINKS :: " << stat.getNlink() << endl;
 
 		// if name is a regular file, print the info
 		if( type == Kernel::S_IFREG )

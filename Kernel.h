@@ -1,3 +1,7 @@
+/** Rohit Sindhu [sindh010]
+ *  Aravind Alagiri Ramkumar [alagi005]
+ *  Aparna Mahadevan [mahad028]
+ */
 #ifndef KERNEL_H
 #define KERNEL_H
 
@@ -80,7 +84,7 @@ class Kernel
 		static int write( int fd , char * buf , int count );
 		static int writedir( int fd , DirectoryEntry& dirp );
 		static int link( char* fromName, char* toName);
-		static int nlink (char* filepath);
+		static int unlink (char* filepath);
 
 		const static int MAX_OPEN_FILE_SYSTEMS = 1 ;
 		const static short ROOT_FILE_SYSTEM = 0 ;

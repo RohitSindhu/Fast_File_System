@@ -1,3 +1,7 @@
+/** Rohit Sindhu [sindh010]
+ *  Aravind Alagiri Ramkumar [alagi005]
+ *  Aparna Mahadevan [mahad028]
+ */
 #include "FileSystem.h"
 #include "SuperBlock.h"
 #include "BitBlock.h"
@@ -180,7 +184,8 @@ void FileSystem::freeBlock(int dataBlockNumber)
 	freeListBitBlock->write(file);
 }
 
-
+// Function to check if allocated the blocks are set is allocated in bit map
+// and all the non allocated blocks are set as unset in bit map
 void FileSystem::checkBlocks(map<int, char> allocatedBlocks) {
 	for ( int i = 0 ; i < blockCount ; i++) {
 		loadFreeListBlock(i);

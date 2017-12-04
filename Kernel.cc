@@ -1,3 +1,7 @@
+/** Rohit Sindhu [sindh010]
+ *  Aravind Alagiri Ramkumar [alagi005]
+ *  Aparna Mahadevan [mahad028]
+ */
 #include "Kernel.h"
 #include <stdlib.h>
 #include <string.h>
@@ -632,7 +636,6 @@ int Kernel::read( int fd , char * buf , int count )
 	int blockSize = file->getBlockSize() ;
 	char * bytes = file->getBytes() ;
 	int readCount = 0 ;
-	cout << "File Offset " << offset << endl;
 	for( int i = 0 ; i < count ; i ++ )
 	{
 		// if we read to the end of the file, stop reading
@@ -650,11 +653,9 @@ int Kernel::read( int fd , char * buf , int count )
 		}
 		// copy a byte from the file buffer to the read buffer
 		buf[i] = bytes[ offset % blockSize ] ;
-		 cout << "-" << bytes[ offset % blockSize ] ;
 		offset ++ ;
 		readCount ++ ;
 	}
-	cout << "Read Offset " << offset << endl;
 	// update the offset
 	file->setOffset( offset ) ;
 
@@ -1373,9 +1374,10 @@ short Kernel::findIndexNode( char * path , IndexNode& inode )
 	return indexNodeNumber ;
 }
 
-int Kernel::nlink (char* filepath) {
+// Function to unlink the file
+int Kernel::unlink (char* filepath) {
 	int fileStatus = 0 ;
-    // stat the name to get information about the file or directory
+    // stat to get information about the file or directory
     Stat fileStat;
     fileStatus = Kernel::stat( filepath , fileStat ) ;
 
@@ -1384,6 +1386,7 @@ int Kernel::nlink (char* filepath) {
         Kernel::exit(1);
     }
 
+	// getFileName and Directory name
     int index = -1;
     int ind = 0;
     while(filepath[ind] != '\0') {
@@ -1396,7 +1399,7 @@ int Kernel::nlink (char* filepath) {
         Kernel::perror("No file to unlink to -- rm\n");
         Kernel::exit(1);
     }
-    // getFileName and Directory name
+    
     char dir[512];
     char fileName[512];
     memset(dir, '\0', 512);
@@ -1410,6 +1413,7 @@ int Kernel::nlink (char* filepath) {
         index++;
         ind++;
     }
+	// ###############################
 
     // open the directory
     int fd_dir = Kernel::open( dir , Kernel::O_RDWR ) ;
@@ -1420,9 +1424,10 @@ int Kernel::nlink (char* filepath) {
         Kernel::exit(1) ;
     }
 
-	// Go to file to delete
+	
 	DirectoryEntry directoryEntry;
 	int st = 0 ;
+	// Read directory untill we find the file entry
 	while( true )
 	{
 		// read a directory entry
@@ -1443,6 +1448,7 @@ int Kernel::nlink (char* filepath) {
 	DirectoryEntry dirEntry;
 	int local_offset = -1;
 	FileDescriptor * fileDesc = process.openFiles[fd_dir];
+	// Write back all the entries so that there is no hole in directory entries
 	while( true )
 	{
 		local_offset = fileDesc->getOffset();
@@ -1474,6 +1480,7 @@ int Kernel::nlink (char* filepath) {
     memset(directoryEntryBuffer, '\0', DirectoryEntry::DIRECTORY_ENTRY_SIZE);
 	fileDesc->setOffset(local_offset - DirectoryEntry::DIRECTORY_ENTRY_SIZE);
     int status = 0 ;
+	// Writing the last entry as empty
     status = Kernel::write(fd_dir, directoryEntryBuffer, DirectoryEntry::DIRECTORY_ENTRY_SIZE ) ;
     if( status < 0 )
     {
@@ -1483,9 +1490,12 @@ int Kernel::nlink (char* filepath) {
 	fileDesc->setOffset(local_offset);
 	fileDesc->setSize(local_offset - DirectoryEntry::DIRECTORY_ENTRY_SIZE);
 
+	// Read the index node
     IndexNode indexNode;
     openFileSystems->readIndexNode(&indexNode , fileStat.getIno());
-    indexNode.setNlink(indexNode.getNlink() - 1 );
+    // Decrement the nlinks 
+	indexNode.setNlink(indexNode.getNlink() - 1 );
+	// if nlinks comes to zero, freee all blocks
 	if (indexNode.getNlink() == 0) {
 		// free blocks
 		// free any blocks currently allocated to the file
@@ -1507,6 +1517,7 @@ int Kernel::nlink (char* filepath) {
 		// update the inode to size 0
 		indexNode.setSize(0);
 	}
+	// write back index node
 	openFileSystems->writeIndexNode(&indexNode , fileStat.getIno());
 	
     // call close() to close the file
@@ -1520,8 +1531,7 @@ int Kernel::nlink (char* filepath) {
     // ############################################################################
 }
 
-
-
+// Function to link the one file to another
 int Kernel::link( char* fromName, char* toName) {
     // Operations for fromName  ##################################################
     int statusFrom = 0 ;
@@ -1535,7 +1545,7 @@ int Kernel::link( char* fromName, char* toName) {
     }
     // ############################################################################
 
-    // Operations for fromName  ##################################################
+    // Operations for toName  ##################################################
     int index = -1;
 
     int ind = 0;
@@ -1566,7 +1576,7 @@ int Kernel::link( char* fromName, char* toName) {
         ind++;
     }
 
-    // open the directory
+    // open the target directory
     int fd_toDir = Kernel::open( toDir , Kernel::O_RDWR ) ;
     if( fd_toDir < 0 )
     {
@@ -1575,7 +1585,7 @@ int Kernel::link( char* fromName, char* toName) {
         Kernel::exit(1) ;
     }
 
-	// Go to end
+	// Go to end of the target directory entries
 	DirectoryEntry directoryEntry;
 	int st = 0 ;
 	while( true )
@@ -1590,12 +1600,13 @@ int Kernel::link( char* fromName, char* toName) {
 
     char directoryEntryBuffer[DirectoryEntry::DIRECTORY_ENTRY_SIZE];
     memset(directoryEntryBuffer, '\0', DirectoryEntry::DIRECTORY_ENTRY_SIZE);
-
+	// create entry to write
     DirectoryEntry newEntry(statFrom.getIno() , fileName);
     memset(directoryEntryBuffer, '\0', DirectoryEntry::DIRECTORY_ENTRY_SIZE);
     newEntry.write( directoryEntryBuffer , 0) ;
 
     int status = 0 ;
+	// Write the entry in target dir
     status = Kernel::write(fd_toDir, directoryEntryBuffer, DirectoryEntry::DIRECTORY_ENTRY_SIZE ) ;
     if( status < 0 )
     {

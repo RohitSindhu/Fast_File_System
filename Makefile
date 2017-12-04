@@ -1,3 +1,7 @@
+ #  Rohit Sindhu [sindh010]
+ #  Aravind Alagiri Ramkumar [alagi005]
+ #  Aparna Mahadevan [mahad028]
+
 all: mkfs ls cat tee cp dump mkdir ln rm fsck
 
 cp: cp.cc Kernel.o IndexNode.o FileDescriptor.o DirectoryEntry.o ProcessContext.o FileSystem.o Stat.o BitBlock.o Block.o SuperBlock.o

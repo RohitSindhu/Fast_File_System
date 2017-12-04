@@ -1,3 +1,7 @@
+/** Rohit Sindhu [sindh010]
+ *  Aravind Alagiri Ramkumar [alagi005]
+ *  Aparna Mahadevan [mahad028]
+ */
 #ifndef DIRECTORY_ENTRY_H
 #define DIRECTORY_ENTRY_H
 #include <iostream>

@@ -1,3 +1,7 @@
+/** Rohit Sindhu [sindh010]
+ *  Aravind Alagiri Ramkumar [alagi005]
+ *  Aparna Mahadevan [mahad028]
+ */
 #ifndef INDEXNODE_H
 #define INDEXNODE_H
 
@@ -11,7 +15,7 @@ class IndexNode
 {
 	public:
 		const static int INDEX_NODE_SIZE = 64 ;
-		const static int MAX_DIRECT_BLOCKS = 1 ;
+		const static int MAX_DIRECT_BLOCKS = 10 ;
 		static int MAX_FILE_BLOCKS ;
 
 	private:
@@ -21,7 +25,7 @@ class IndexNode
 		unsigned short gid;
 		int size;
 		int directBlocks[10];
-		int indirectBlock;//Not yet implemented.
+		int indirectBlock;
 		int doubleIndirectBlock;//Not yet implemented.
 		int tripleIndirectBlock;//Not yet implemented.
 		int atime;//Not yet implemented.
