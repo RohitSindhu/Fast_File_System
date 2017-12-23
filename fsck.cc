@@ -149,7 +149,7 @@ int main() {
                 // Tbis is a special case for root directory as it is set to 3 in mkfs code.
                 cout << "Directory : " << current_entry.name << " has incorrect nlinks -- Expected : " << currIndexNode.getNlink() << " Actual : " << current_nlink_count + 1 << endl;
             }
-            else if(current_nlink_count != currIndexNode.getNlink()) {
+            else if(current_entry.ino != 0 &&current_nlink_count != currIndexNode.getNlink()) {
                 cout << "Directory : " << current_entry.name << " has incorrect nlinks -- Expected : " << currIndexNode.getNlink() << " Actual : " << current_nlink_count << endl;
             }
         }
